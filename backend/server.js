@@ -11,7 +11,8 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:5173", 
-  "https://signature-engine-blond.vercel.app"
+  "https://signature-engine-blond.vercel.app",
+  "https://signature-engine-q5f0iuscw-srishti-soni-s-projects.vercel.app"
 ];
 
 app.use(
