@@ -1,0 +1,66 @@
+# version: "3.8"
+# services:
+#   mongodb:
+#     image: mongo:6
+#     ports:
+#       - "27017:27017"
+#     volumes:
+#       - mongo-data:/data/db
+
+#   backend:
+#     build: ./backend
+#     environment:
+#       - MONGO_URI=mongodb://mongodb:27017/signaturedb
+#       - PORT=4000
+#       - PUBLIC_BASE_URL=http://localhost:4000
+#       - PDFS_DIR=/usr/src/app/pdfs
+#     ports:
+#       - "4000:4000"
+#     volumes:
+#       - ./backend/pdfs:/usr/src/app/pdfs
+#     depends_on:
+#       - mongodb
+
+# volumes:
+#   mongo-data:
+
+
+
+version: "3.8"
+
+services:
+  mongodb:
+    image: mongo:6
+    container_name: mongo_container
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  backend:
+    build: ./backend
+    container_name: backend_container
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/signaturedb
+      - PORT=4000
+      - PUBLIC_BASE_URL=http://localhost:4000
+      - PDFS_DIR=/usr/src/app/pdfs
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./backend/pdfs:/usr/src/app/pdfs
+    depends_on:
+      - mongodb
+
+  frontend:
+    build: ./frontend
+    container_name: frontend_container
+    environment:
+      - VITE_BACKEND_URL=http://localhost:4000
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  mongo-data:
