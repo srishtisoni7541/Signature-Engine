@@ -4,9 +4,9 @@ import { Rnd } from "react-rnd";
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import axios from "axios";
 import SignatureCanvas from "./SignatureCanvas";
 import { updateField, removeField } from "../reducers/fieldSlice";
+import api from "../api/api";
 
 // PDF worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
@@ -25,7 +25,6 @@ function cssBoxToPdfPoints(box, viewerRect, pagePoints) {
 }
 
 export default function PdfViewer({
-  backendBaseUrl = "http://localhost:3000",
   pdfId,
 }) {
   const viewerRef = useRef(null);
@@ -91,54 +90,52 @@ export default function PdfViewer({
     );
   };
 
-  const onSignatureSave = async (dataUrl) => {
-    if (!signingField) return;
+ const onSignatureSave = async (dataUrl) => {
+  if (!signingField) return;
 
-    try {
-      const viewerRect = viewerRef.current.getBoundingClientRect();
-      const coordsPts = cssBoxToPdfPoints(
-        {
-          left: signingField.left,
-          top: signingField.top,
-          width: signingField.width,
-          height: signingField.height,
-        },
-        viewerRect,
-        pagePoints
-      );
+  try {
+    const viewerRect = viewerRef.current.getBoundingClientRect();
+    const coordsPts = cssBoxToPdfPoints(
+      {
+        left: signingField.left,
+        top: signingField.top,
+        width: signingField.width,
+        height: signingField.height,
+      },
+      viewerRect,
+      pagePoints
+    );
 
-      const payload = {
-        pdfId,
-        signatureBase64: dataUrl,
-        coords: {
-          page: signingField.page,
-          x: coordsPts.x,
-          y: coordsPts.y,
-          width: coordsPts.width,
-          height: coordsPts.height,
-        },
-        meta: { signer: "Demo User" },
-      };
+    const payload = {
+      pdfId,
+      signatureBase64: dataUrl,
+      coords: {
+        page: signingField.page,
+        x: coordsPts.x,
+        y: coordsPts.y,
+        width: coordsPts.width,
+        height: coordsPts.height,
+      },
+      meta: { signer: "Demo User" },
+    };
 
-      const resp = await axios.post(
-        `${backendBaseUrl}/pdf/save-signature`,
-        payload
-      );
+    const resp = await api.post("/save-signature", payload);
 
-      if (resp.data?.url) {
-        toast.success(" Signature saved successfully!", {
-          position: "top-right",
-          autoClose: 3000,
-        });
-        setSigningField(null);
-      } else {
-        toast.error("Signing failed!");
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("❌ " + (err.response?.data?.message || err.message));
+    if (resp.data?.url) {
+      toast.success("Signature saved successfully!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      setSigningField(null);
+    } else {
+      toast.error("Signing failed!");
     }
-  };
+  } catch (err) {
+    console.error(err);
+    toast.error("❌ " + (err.response?.data?.message || err.message));
+  }
+};
+
 
   if (!pdfId) {
     return (
@@ -248,7 +245,7 @@ export default function PdfViewer({
               style={{ maxWidth: `${pdfWidth}px` }}
             >
               <Document
-                file={`${backendBaseUrl}/files/originals/${pdfId}.pdf`}
+               file={`${api.defaults.baseURL}/files/originals/${pdfId}.pdf`}
                 loading={
                   <div className="flex flex-col items-center justify-center py-24 sm:py-32">
                     <div className="relative">
