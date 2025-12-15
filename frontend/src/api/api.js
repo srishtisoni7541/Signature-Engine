@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const BASE_URL = import.meta.env.REACT_APP_API_BASE_URL || "http://localhost:4000/pdf";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000/pdf";
+console.log("API Base URL:", BASE_URL);
 const api = axios.create({
   baseURL: BASE_URL,
   headers: {
